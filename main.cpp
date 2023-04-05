@@ -5,12 +5,13 @@
 #include <cmath>
 #include <chrono>
 using namespace std;
+using namespace chrono;
 
 //=========================================================PROTOTYPES ==========================================================================================
-void findMaxSub(const vector<double>& vec, int k, double& max_avg, int& beginingIndex, int& endIndex);
+void findMaxSubBruteForce(const vector<double>& vec, int k, double& max_avg, int& beginingIndex, int& endIndex);
 void divideAndConq(const vector<double>& vec, int k, double& max_avg, int start_idx, int end_idx, int& max_start_idx, int& max_end_idx);
-void findTheMaxAvg(const vector<double>& vec, int k, double& maximumAvg, int beginingIndex, int endIndex) ;
 void findMiddle(const vector<double>& vec, int k, int startIndex, int endIndex, int midIndex,double &maxMiddleAvg, int &maxMiddleStartIndex,int &maxMiddleEndIndex);
+void displayTheSequence(const vector<double>& vec, int k, double maximumAvg, int startIndex, int endIndex);
 
 
 int main(int argc, char *argv[])     //argc is the number of arguments passed to the program and argv is an array of pointers to the arguments
@@ -37,7 +38,7 @@ int main(int argc, char *argv[])     //argc is the number of arguments passed to
         int numOfElementsInFile;                                 //number of elements in the input file
         inputFile >> numOfElementsInFile;                       //get the number of elements in the file
         
-        for(int i = 0; i < numOfElementsInFile; i++)           //read the numbers of the input file and put them in the vector
+        for(int i = 0; i <= numOfElementsInFile; i++)           //read the numbers of the input file and put them in the vector
         {
             double number;                              
             inputFile >> number;                         //get the number
@@ -51,15 +52,58 @@ int main(int argc, char *argv[])     //argc is the number of arguments passed to
         return 1;
     }
 
-    int endIndex = vec.size()-1;
-    int startIndexForSubArrays = 0;
-    int endIndexForSubArrays = vec.size()-1;
 
-    if(option == "-b")
+    int startIndexForSubArrays = 0;                         //start index of the subarray that has the max average
+    int endIndexForSubArrays = 0;                           //end index of the subarray that has the max average
+    for (int n = 100000; n <= 1000000; n += 100000)         //n is the size of the vector
     {
-        findMaxSub(vec, k, maximumAvg, startIndex, endIndex);
-        cout << "The max avg subsequence using Brute Force with a size of (k= " << k << ") is: \n";
-        for (int i = startIndex; i <= endIndex; i++) 
+        vector<double> subVec(vec.begin(), vec.begin() + n);      //subVec is a vector that contains the first n elements of the vector vec
+        int endIndex = subVec.size()-1;                             //end index of the subarray to be printed
+
+        if(option == "-b")
+        {
+            auto start = high_resolution_clock::now();   //start the timer
+            findMaxSubBruteForce(subVec, k, maximumAvg, startIndex, endIndex);  //call the function to find the maximum average subarray
+            auto end = high_resolution_clock::now();   //end the timer
+            auto duration = duration_cast<chrono::milliseconds>(end - start).count();  //calculate the running time
+            cout << "Running time for Brute Force: "  << duration << " ms" << endl;  //print the running time
+            displayTheSequence(subVec, k, maximumAvg, startIndex, endIndex);  //print the subarray that has the max average
+            maximumAvg =-1;                                     
+            startIndex = 0;  
+            startIndexForSubArrays = 0;
+            endIndexForSubArrays = 0;
+        }
+        else if(option == "-d")
+        {
+            auto start = high_resolution_clock::now();  //start the timer   
+            divideAndConq(subVec, k, maximumAvg, startIndex, endIndex, startIndexForSubArrays, endIndexForSubArrays); //call the function to find the maximum average subarray
+            auto end = high_resolution_clock::now(); //end the timer
+            auto duration = duration_cast<chrono::milliseconds>(end - start).count(); //calculate the running time
+            cout << "Running time for Divide and Conquer: "<< duration << " ms" << endl; //print the running time
+            displayTheSequence(subVec, k, maximumAvg, startIndexForSubArrays, endIndexForSubArrays); //print the subarray that has the max average
+            maximumAvg =-1;                                     
+            startIndex = 0;
+            startIndexForSubArrays = 0;
+            endIndexForSubArrays = 0;
+        }
+        else
+        {
+            cout << "Invalid option" << endl;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+
+//this function disays the sequence that has the max average    
+void displayTheSequence(const vector<double>& vec, int k, double maximumAvg, int startIndex, int endIndex)
+{
+    int n = vec.size();
+    cout << "n: " << n << endl;
+    cout << "The max avg subsequence with a size of (k= " << k << ") is: \n";
+    for (int i = startIndex; i <= endIndex; i++) 
     {
         if(i == endIndex)   //so that there is no comma after the last element
         {
@@ -71,45 +115,16 @@ int main(int argc, char *argv[])     //argc is the number of arguments passed to
         }
     }
     cout << "\n";
-    cout << "and a average of " << maximumAvg << "\n";
-    cout << "begining at index " << startIndex << " and ending at index " << endIndex << "\n";
-    }
-    else if(option == "-d")
-    {
-        divideAndConq(vec, k, maximumAvg, startIndex, endIndex, startIndexForSubArrays,endIndexForSubArrays);
-        cout << "The max avg subsequence using the divide and conq with a size of (k= )" << k << ") is: \n";
-        for (int i = startIndexForSubArrays; i <= endIndexForSubArrays; i++) 
-        {
-            if(i == endIndexForSubArrays)      //so that there is no comma after the last element
-            {
-                cout << vec[i];
-            }
-            else
-            {
-                cout << vec[i] << ", ";
-            }
-        }
-        cout << "\n";
-        cout << "and a average of " << maximumAvg << "\n";
-        cout << "begining at index " << startIndexForSubArrays << " and ending at index " << endIndexForSubArrays << "\n";
-
-    }
-    else
-    {
-        cout << "Invalid option" << endl;
-        return 1;
-    }
-
-    return 0;
+    cout << "with a Average of:  " << maximumAvg << "\n";
+    cout << "begining at index:  " << startIndex << " and ending at index:  " << endIndex << "\n\n";
+    
 }
 
 
-
 // Function to find the maximum average subarray of size k in the vector vec
-void findMaxSub(const vector<double>& vec, int k, double& maximumAvg, int& beginingIndex, int& endIndex)   //k is the size for each subarray
+void findMaxSubBruteForce(const vector<double>& vec, int k, double& maximumAvg, int& beginingIndex, int& endIndex)   //k is the size for each subarray
 {                                                                                       
     int n = vec.size();
-    cout<< "n: " << n << endl;
     for (int i = 0; i <= n-k; i++)               //n-k is the start index of the last subarray because the last subarray will have n-k numbers
     {
         double sum = 0;                               // sum of the elements in the subarray, reset to 0 for each subarray
@@ -140,15 +155,21 @@ void findMaxSub(const vector<double>& vec, int k, double& maximumAvg, int& begin
 */
 void divideAndConq(const vector<double>& vec, int k,  double& maxAvg, int startIndex, int endIndex, int& indexOfMaxSubStart, int& indexOfMaxSubEnd) 
 {
-
-    if (endIndex - startIndex + 1 == k)                 // base case 1: subarray size is k 
+    if (endIndex - startIndex + 1 <= k) // base case: array size is less than or equal to k
     {
-        cout << "base case \n";
-        findTheMaxAvg(vec, k, maxAvg, startIndex, endIndex);                    //find the max average of the subarray
-        cout << "maxAvg: " << maxAvg << endl;
-        indexOfMaxSubStart += startIndex;                                        //update the start index of the subarray that has the max average
-        indexOfMaxSubEnd += endIndex;                                        //update the end index of the subarray that has the max average
-        return;                                                                 //returns to the previous recursive call                                                          
+        double sum = 0;                                     // sum of the elements in the subarray, reset to 0 for each subarray
+        for (int i = startIndex; i <= endIndex; i++)           
+        {
+            sum += vec[i];                                 //add the elements of the subarray
+        }
+        double avg = sum / (endIndex - startIndex + 1);             //calculate the average of the subarray
+        if (avg > maxAvg)
+        {
+            maxAvg = avg;                                   //update the max average if the current average is greater than the max average
+            indexOfMaxSubStart = startIndex;           //update the start index of the  subarray that has the max average
+            indexOfMaxSubEnd = endIndex;                //update the end index of the subarray that has the max average
+        }
+        return;                                     //return to the previous function call
     }
 
     double maxLeftAvg = -1;     
@@ -171,12 +192,15 @@ void divideAndConq(const vector<double>& vec, int k,  double& maxAvg, int startI
         maxAvg = maxLeftAvg;
         indexOfMaxSubStart = maxLeftStartIndex;
         indexOfMaxSubEnd = maxLeftEndIndex;
-    } else if (maxRightAvg >= maxLeftAvg && maxRightAvg >= maxMiddleAvg) 
+
+    } 
+    else if (maxRightAvg >= maxLeftAvg && maxRightAvg >= maxMiddleAvg) 
     {
         maxAvg = maxRightAvg;
         indexOfMaxSubStart = maxRightStartIndex;
         indexOfMaxSubEnd = maxRightEndIdx;
-    } else 
+    } 
+    else 
     {
         maxAvg = maxMiddleAvg;
         indexOfMaxSubStart = maxMiddleStartIndex;
@@ -184,23 +208,6 @@ void divideAndConq(const vector<double>& vec, int k,  double& maxAvg, int startI
     }
 }
 
-
-void findTheMaxAvg(const vector<double>& vec, int k, double& maximumAvg, int beginingIndex, int endIndex)   //k is the size for each subarray
-{                                                                                       
-    int n = vec.size();
-
-    
-    double sum = 0;                                             
-    for (int j = beginingIndex; j <= endIndex; j++)              
-    {
-        sum += vec[j];                                        //add the elements of the subarray
-    }
-    double avg = sum / k;                                    //calculate the average of the subarray
-    if (avg > maximumAvg)                                                      
-    {
-        maximumAvg = avg;                                   //update the max average if the current average is greater than the max average                      
-    }
-}
 
 void findMiddle(const vector<double>& vec, int k, int startIndex, int endIndex, int midIndex,double &maxMiddleAvg, int &maxMiddleStartIndex,int &maxMiddleEndIndex)   //k is the size for each subarray
 {                                                                                       

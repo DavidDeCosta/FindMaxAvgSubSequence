@@ -155,7 +155,7 @@ void findMaxSubBruteForce(const vector<double>& vec, int k, double& maximumAvg, 
 */
 void divideAndConq(const vector<double>& vec, int k,  double& maxAvg, int startIndex, int endIndex, int& indexOfMaxSubStart, int& indexOfMaxSubEnd) 
 {
-    if (endIndex - startIndex + 1 <= k) // base case: array size is less than or equal to k
+    if (endIndex - startIndex + 1 <= k) // base case: array size is less than or equal to k this finds the average of the subarray with each function call
     {
         double sum = 0;                                     // sum of the elements in the subarray, reset to 0 for each subarray
         for (int i = startIndex; i <= endIndex; i++)           
@@ -187,7 +187,7 @@ void divideAndConq(const vector<double>& vec, int k,  double& maxAvg, int startI
     findMiddle(vec,k, startIndex,endIndex,midIndex, maxMiddleAvg, maxMiddleStartIndex, maxMiddleEndIndex);  //find the max average of the middle subarray
     divideAndConq(vec, k, maxLeftAvg, startIndex, midIndex, maxLeftStartIndex, maxLeftEndIndex);    //find the max average of the left subarray and update the start and end indexes of the subarray that has the max average
     divideAndConq(vec, k,maxRightAvg ,midIndex + 1, endIndex, maxRightStartIndex, maxRightEndIdx);  //find the max average of the right subarray
-    if (maxLeftAvg >= maxRightAvg && maxLeftAvg >= maxMiddleAvg) 
+    if (maxLeftAvg >= maxRightAvg && maxLeftAvg >= maxMiddleAvg)    
     {
         maxAvg = maxLeftAvg;
         indexOfMaxSubStart = maxLeftStartIndex;
@@ -211,11 +211,11 @@ void divideAndConq(const vector<double>& vec, int k,  double& maxAvg, int startI
 
 void findMiddle(const vector<double>& vec, int k, int startIndex, int endIndex, int midIndex,double &maxMiddleAvg, int &maxMiddleStartIndex,int &maxMiddleEndIndex)   //k is the size for each subarray
 {                                                                                       
-    for (int i = midIndex; i >= startIndex && i > midIndex - k; i--) //i is the start index of the subarray
+    for (int i = midIndex;( i >= startIndex) && (i > midIndex - k); i--) //i is the start index of the subarray and it goes from the middle index to the start index
     {
-        for (int j = midIndex + 1; j <= endIndex && j < midIndex + 1 + k; j++) //j is the end index of the subarray
+        for (int j = midIndex + 1; j <= endIndex && j < midIndex + 1 + k; j++) //j is the end index of the subarray and it goes from the middle index to the end index
         {
-            int subarraySize = j - i + 1;           //size of the subarray
+            int subarraySize = j - i + 1;           //size of the subarray is j- i + 1 because the last element of the subarray is j and the first element is i
             if (subarraySize >= k)                  //if the size of the subarray is greater than or equal to k meaning that the subarray is valid
             {
                 double sum = 0;
@@ -226,9 +226,9 @@ void findMiddle(const vector<double>& vec, int k, int startIndex, int endIndex, 
                 double avg = sum / subarraySize;           //calculate the average of the subarray
                 if (avg > maxMiddleAvg)                   
                 {
-                    maxMiddleAvg = avg;
-                    maxMiddleStartIndex = i;
-                    maxMiddleEndIndex = j;
+                    maxMiddleAvg = avg;                   //update the max average if the current average is greater than the max average
+                    maxMiddleStartIndex = i;              //update the start index of the  subarray that has the max average
+                    maxMiddleEndIndex = j;                //update the end index of the subarray that has the max average
                 }
             }
         }

@@ -12,9 +12,8 @@ using namespace chrono;
 //=========================================================PROTOTYPES ==========================================================================================
 void bruteForceMaxSub(const vector<double>& vec, int k, double& max_avg, int& beginingIndex, int& endIndex);
 void divideAndConq(const vector<double>& vec, int k, double& maxAvg, int startIndex, int endIndex, int& indexOfMaxSubStart, int& indexOfMaxSubEnd); 
-void findMiddle(const vector<double>& vec, int k, int startIndex, int endIndex, int midIndex, double &maxMiddleAvg, int &maxMiddleStartIndex, int &maxMiddleEndIndex);
 void displayTheSequence(const vector<double>& vec, int k, double maximumAvg, int startIndex, int endIndex);
-void messingaround(const vector<double>& vec, int k, int startIndex, int endIndex, int midIndex, double &maxMiddleAvg, int &maxMiddleStartIndex, int &maxMiddleEndIndex);
+void findMaxAvgMiddleSubArray(const vector<double>& vec, int k, int startIndex, int endIndex, int midIndex, double &maxMiddleAvg, int &maxMiddleStartIndex, int &maxMiddleEndIndex);
 
 
 int main(int argc, char *argv[])     //argc is the number of arguments passed to the program and argv is an array of pointers to the arguments
@@ -168,10 +167,10 @@ void divideAndConq(const vector<double>& vec, int k, double& maxAvg, int startIn
     double maxMiddleAvg = -1;
     int maxMiddleStartIndex = 0;   
     int maxMiddleEndIndex = 0;
-  //  findMiddle(vec, k, startIndex, endIndex, midIndex, maxMiddleAvg, maxMiddleStartIndex, maxMiddleEndIndex); //find the max average of the middle subarray
-    messingaround(vec, k, startIndex, endIndex, midIndex, maxMiddleAvg, maxMiddleStartIndex, maxMiddleEndIndex); //find the max average of the middle subarray
+
     divideAndConq(vec, k, maxLeftAvg, startIndex, midIndex, maxLeftStartIndex, maxLeftEndIndex);
     divideAndConq(vec, k, maxRightAvg, midIndex + 1, endIndex, maxRightStartIndex, maxRightEndIndex);
+    findMaxAvgMiddleSubArray(vec, k, startIndex, endIndex, midIndex, maxMiddleAvg, maxMiddleStartIndex, maxMiddleEndIndex); //find the max average of the middle subarray
     if (maxLeftAvg >= maxRightAvg && maxLeftAvg >= maxMiddleAvg)    //compare the averages of the left, right, and middle subarrays
     {
         maxAvg = maxLeftAvg;
@@ -192,20 +191,19 @@ void divideAndConq(const vector<double>& vec, int k, double& maxAvg, int startIn
     }
 }
 
-void messingaround(const vector<double>& vec, int k, int startIndex, int endIndex, int midIndex, double &maxMiddleAvg, int &maxMiddleStartIndex, int &maxMiddleEndIndex)
+void findMaxAvgMiddleSubArray(const vector<double>& vec, int k, int startIndex, int endIndex, int midIndex, double &maxMiddleAvg, int &maxMiddleStartIndex, int &maxMiddleEndIndex)
 {
+    int start = max(startIndex, midIndex - k);   //max makes sure that the start index is not less than 0
+    int end = min(endIndex - k + 1, midIndex + k);  //min makes sure that the end index is not greater than the size of the array
 
-   int startRange = max(startIndex, midIndex - k);
-    int endRange = min(endIndex - k + 1, midIndex + k);
-
-    for (int i = startRange; i <= endRange; i++)
+    for (int i = start; i <= end; i++)  
     {
         double sum = 0;
-        for (int j = i; j < i + k; j++)
+        for (int j = i; j < i + k; j++)  //i+k because the last element of the subarray is i+k-1
         {
-            sum += vec[j];
+            sum += vec[j];              //add the elements of the subarray
         }
-        double avg = sum / k;
+        double avg = sum / k;           // average of the subarray
         if (avg > maxMiddleAvg)
         {
             maxMiddleAvg = avg;
@@ -214,54 +212,4 @@ void messingaround(const vector<double>& vec, int k, int startIndex, int endInde
         }
     }
 
-
-
-
-
-}
-
-
-void findMiddle(const vector<double>& vec, int k, int startIndex, int endIndex, int midIndex, double &maxMiddleAvg, int &maxMiddleStartIndex, int &maxMiddleEndIndex)
-{
-    double sum = 0;
-    int left = max(midIndex - k + 1, startIndex);  //find the left index of the middle subarray if it is out of bound then set it to the start index of the array
-    int right = min(midIndex + k, endIndex);       //find the right index of the middle subarray if it is out of bound then set it to the end index of the array
-
-    // Initialize the sum for the first window
-    for (int i = left; i <= right; i++)
-    {
-        sum += vec[i];             //add the elements of the middle subarray
-    }
-
-    maxMiddleAvg = sum / k;          //calculate the average of the middle subarray
-    maxMiddleStartIndex = left;      //start index of the middle subarray  is the left index because the middle subarray is the largest subarray
-    maxMiddleEndIndex = right;       //the end index of the middle subarray is the right index because the middle subarray is the largest subarray
-
-    for (int i = left - 1; i >= startIndex; i--) //start from the left index and go to the start index of the array
-    {
-        sum -= vec[i + k];   //remove the last element of the window because the window is sliding to the left
-        sum += vec[i];        //add the new element to the window because the window is sliding to the left
-
-        double avg = sum / k;
-        if (avg > maxMiddleAvg)
-        {
-            maxMiddleAvg = avg;
-            maxMiddleStartIndex = i;
-            maxMiddleEndIndex = i + k - 1;
-        }
-    }
-
-    for (int j = right + 1; j <= endIndex && j < midIndex + 1 + k; j++)
-    {
-        sum -= vec[j - k];  //remove the first element of the window because the window is sliding to the right
-        sum += vec[j];      //add the new element to the window because the window is sliding to the right
-
-        double avg = sum / k;
-        if (avg > maxMiddleAvg)
-        {
-            maxMiddleAvg = avg;
-            maxMiddleStartIndex = j - k + 1;
-            maxMiddleEndIndex = j;
-        }
-    }
 }
